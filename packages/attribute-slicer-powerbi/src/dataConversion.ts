@@ -25,7 +25,6 @@
 import { ListItem, IAttributeSlicerVisualData } from "./interfaces";
 import { ISerializedItem } from "@essex/attribute-slicer";
 import "powerbi-visuals/lib/powerbi-visuals";
-import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataView = powerbi.DataView;
 import { createValueFormatter, createCategoryFormatter } from "./formatting";
 import { IColorSettings, convertItemsWithSegments, IValueSegment } from "@essex/pbi-base";
@@ -36,9 +35,10 @@ const ldget = require("lodash/get"); //tslint:disable-line
  */
 export default function converter(
     dataView: DataView,
-    valueFormatter?: IValueFormatter,
-    categoryFormatter?: IValueFormatter,
-    settings?: IColorSettings): IAttributeSlicerVisualData {
+    valueFormatter?: any,
+    categoryFormatter?: any,
+    settings?: IColorSettings,
+    createSelectionIdBuilder?: () => powerbi.visuals.ISelectionIdBuilder): IAttributeSlicerVisualData {
     "use strict";
 
     if (dataView && dataView.categorical) {
@@ -66,7 +66,7 @@ export default function converter(
                 return item;
 
             // TOOD: This logic should move to pbi base
-        }, dataSupportsColorizedInstances(dataView) ? settings : undefined) as IAttributeSlicerVisualData;
+        }, dataSupportsColorizedInstances(dataView) ? settings : undefined, createSelectionIdBuilder) as IAttributeSlicerVisualData;
         return converted;
     }
 }
@@ -74,7 +74,7 @@ export default function converter(
 /**
  * Builds the display string for the given category
  */
-export function buildCategoryDisplay(cats: powerbi.DataViewCategoryColumn[], catIdx: number, categoryFormatter?: IValueFormatter): string {
+export function buildCategoryDisplay(cats: powerbi.DataViewCategoryColumn[], catIdx: number, categoryFormatter?: any): string {
     "use strict";
     return (cats || []).map(n => {
         const category = n.values[catIdx];

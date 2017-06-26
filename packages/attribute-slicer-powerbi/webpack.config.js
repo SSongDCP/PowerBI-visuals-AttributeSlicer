@@ -25,9 +25,11 @@
 const path = require('path');
 const webpack = require('webpack');
 const fs = require("fs");
+const ENTRY = './src/AttributeSlicerVisual.ts';
+const regex = path.normalize(ENTRY).replace(/\\/g, '\\\\').replace(/\./g, '\\.');
 
 const config = {
-    entry: "./src/AttributeSlicerVisual.ts",
+    entry: ENTRY,
     output: {
         path: __dirname + "/dist",
         filename: "bundle.js"
@@ -36,7 +38,16 @@ const config = {
         extensions: ['.webpack.js', '.web.js', '.js', '.json', '.ts']
     },
     module: {
-        loaders: [
+        rules: [
+            // {
+            //     test: /\.ts$/,
+            //     loader: "tslint",
+            //     enforce: "pre"
+            // },
+            {
+                test: new RegExp(regex),
+                loader: path.join(__dirname, 'bin', 'pbiPluginLoader'),
+            },
             {
                 test: /\.scss$/,
                 loaders: ["style", "css", "sass"]
@@ -51,19 +62,15 @@ const config = {
             },
             {
                 test: /\.ts$/,
-                loader: 'ts-loader?' + JSON.stringify({
-                    compilerOptions: {
-                        files: undefined
-                    }
-                })
+                loader: 'ts-loader'
             }
         ],
     },
     externals: {
-        jquery: "jQuery",
-        d3: "d3",
-        underscore: "_",
-        "lodash": "_",
+        // jquery: "jQuery",
+        // d3: "d3",
+        // underscore: "_",
+        // "lodash": "_",
         "powerbi-visuals/lib/powerbi-visuals": "powerbi",
     },
     plugins: [

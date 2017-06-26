@@ -14,7 +14,7 @@
   },
   "compileOnSave": false,
   "files": [
-    "dist/bundle.js"
+    "src/AttributeSlicerVisual.ts"
   ],
   "exclude": [
     "power-bi",

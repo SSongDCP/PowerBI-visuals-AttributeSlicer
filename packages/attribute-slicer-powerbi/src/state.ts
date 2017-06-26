@@ -36,6 +36,7 @@ import { createItem, dataSupportsColorizedInstances } from "./dataConversion";
 import { DEFAULT_STATE } from "@essex/attribute-slicer";
 import * as _ from "lodash";
 import * as models from 'powerbi-models';
+import { type } from "../powerbi-visuals-utils";
 
 const ldget = require("lodash/get"); // tslint:disable-line
 
@@ -128,7 +129,6 @@ export default class AttributeSlicerVisualState extends HasSettings implements I
         match: any;
         value: any;
         renderedValue?: any;
-        selector: any;
     }[];
 
     /**
@@ -138,8 +138,8 @@ export default class AttributeSlicerVisualState extends HasSettings implements I
         displayName: "Text Size",
         description: "The size of the text",
         defaultValue: DEFAULT_STATE.textSize,
-        parse: val => val ? PixelConverter.fromPointToPixel(parseFloat(val)) : DEFAULT_STATE.textSize,
-        compose: val => PixelConverter.toPoint(val ? val : DEFAULT_STATE.textSize),
+        parse: val => val ? type.PixelConverter.fromPointToPixel(parseFloat(val)) : DEFAULT_STATE.textSize,
+        compose: val => type.PixelConverter.toPoint(val ? val : DEFAULT_STATE.textSize),
     })
     public textSize?: number;
 
@@ -323,13 +323,16 @@ function parseSelectionFromPBI(dataView: powerbi.DataView): ListItem[] {
     const objects = ldget(dataView, "metadata.objects");
     if (objects) {
         // HACK: Extra special code to restore selection
-        const serializedSelectedItems: ListItem[] = JSON.parse(ldget(objects, "general.selection"));
-        if (serializedSelectedItems && serializedSelectedItems.length) {
-            return serializedSelectedItems.map((n: ListItem, i: number) => {
-                const { match, value, renderedValue, id } = serializedSelectedItems[i];
-                const item = createItem(match, value, id, renderedValue);
-                return item;
-            });
+        const selection = ldget(objects, "general.selection");
+        if (selection) {
+            const serializedSelectedItems: ListItem[] = JSON.parse(selection);
+            if (serializedSelectedItems && serializedSelectedItems.length) {
+                return serializedSelectedItems.map((n: ListItem, i: number) => {
+                    const { match, value, renderedValue, id } = serializedSelectedItems[i];
+                    const item = createItem(match, value, id, renderedValue);
+                    return item;
+                });
+            }
         }
         return [];
     } else if (dataView) { // If we have a dataview, but we don't have any selection, then clear it
@@ -396,9 +399,9 @@ function nullToUndefined(obj: object) {
     }
 }
 
-function buildContainsFilter(dataView: powerbi.DataView, value: string) {
+export function buildContainsFilter(dataView: powerbi.DataView, value: string) {
     if (dataView) {
-        let categories: powerbi.DataViewCategoricalColumn = this.dataView.categorical.categories[0];
+        let categories: powerbi.DataViewCategoricalColumn = dataView.categorical.categories[0];
         let target: models.IFilterColumnTarget = {
             table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
             column: categories.source.displayName
