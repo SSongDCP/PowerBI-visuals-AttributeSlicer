@@ -27,11 +27,13 @@ const webpack = require('webpack');
 const fs = require("fs");
 
 const config = {
-    resolve: {
-        extensions: ['', '.webpack.js', '.web.js', '.js', '.json']
+    entry: "./src/AttributeSlicerVisual.ts",
+    output: {
+        path: __dirname + "/dist",
+        filename: "bundle.js"
     },
-    resolveLoader: {
-        fallback: [path.join(__dirname, 'node_modules')],
+    resolve: {
+        extensions: ['.webpack.js', '.web.js', '.js', '.json', '.ts']
     },
     module: {
         loaders: [
@@ -46,6 +48,14 @@ const config = {
             {
                 test: /\.html$/,
                 loader: 'raw-loader'
+            },
+            {
+                test: /\.ts$/,
+                loader: 'ts-loader?' + JSON.stringify({
+                    compilerOptions: {
+                        files: undefined
+                    }
+                })
             }
         ],
     },
@@ -57,7 +67,6 @@ const config = {
         "powerbi-visuals/lib/powerbi-visuals": "powerbi",
     },
     plugins: [
-        new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.ProvidePlugin({
             'Promise': 'exports?global.Promise!es6-promise'
         }),

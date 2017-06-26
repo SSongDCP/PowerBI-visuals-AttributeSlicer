@@ -6,8 +6,7 @@
   "typings": "src/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
-    "pbibundle": "gulp",
-    "compile": "node ./bin/compile",
+    "compile": "webpack",
     "lint": "tslint \"src/**/*[!.d].{ts,tsx}\"",
     "docs": "typedoc --out docs --ignoreCompilerErrors ./ --externalPattern **/node_modules/**/*.* --exclude **/src/**/*.spec.ts",
     "karma:tdd": "karma start --tdd",
@@ -32,7 +31,7 @@
     "lodash": "4.0.0",
     "lodash.get": "^4.4.2",
     "moment": "^2.12.0",
-    "powerbi-visuals": "^0.5.9"
+    "powerbi-models": "^0.11.3"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -87,6 +86,7 @@
     "node-sass": "^4.0.0",
     "npm-run-all": "^1.7.0",
     "phantomjs-prebuilt": "^2.1.7",
+    "powerbi-visuals-tools": "^1.7.0",
     "raw-loader": "0.5.1",
     "react": "0.14.6",
     "react-dom": "0.14.6",
@@ -97,6 +97,7 @@
     "sinon-chai": "^2.8.0",
     "style-loader": "0.13.0",
     "to-string-loader": "^1.1.5",
+    "ts-loader": "^2.2.0",
     "ts-node": "0.5.5",
     "tslint": "^3.15.1",
     "typedoc": "^0.7.0",
@@ -104,7 +105,7 @@
     "underscore": "1.8.3",
     "url-loader": "^0.5.7",
     "wallaby-webpack": "^0.0.26",
-    "webpack": "^1.14.0",
+    "webpack": "^3.0.0",
     "webpack-strip": "^0.1.0",
     "yargs": "3.31.0"
   }

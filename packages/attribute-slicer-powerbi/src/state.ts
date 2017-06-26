@@ -25,21 +25,17 @@
 import {
     setting,
     numberSetting as number,
-    parseSelectionIds,
     HasSettings,
     getSetting,
-    buildContainsFilter,
     ColoredObjectsSettings,
     coloredObjectsSettings,
-    deserializeObjectWithIdentity,
-    serializeObjectWithIdentity,
     colorSetting as color,
 } from "@essex/pbi-base";
 import { IAttributeSlicerState, ListItem } from "./interfaces";
-import PixelConverter = jsCommon.PixelConverter;
 import { createItem, dataSupportsColorizedInstances } from "./dataConversion";
 import { DEFAULT_STATE } from "@essex/attribute-slicer";
 import * as _ from "lodash";
+import * as models from 'powerbi-models';
 
 const ldget = require("lodash/get"); // tslint:disable-line
 
@@ -66,7 +62,7 @@ export default class AttributeSlicerVisualState extends HasSettings implements I
             }
             return "";
         },
-        compose: (val, c, d) => val ? buildContainsFilter(ldget(d, "categorical.categories[0].source"), val) : val,
+        compose: (val, c, d) => val ? buildContainsFilter(d, val) : val,
     })
     public searchText?: string;
 
@@ -272,10 +268,10 @@ export default class AttributeSlicerVisualState extends HasSettings implements I
         const base = super.receive(newProps);
         if (base) {
             if (base.colors && base.colors.instanceColors) {
-                base.colors.instanceColors = base.colors.instanceColors.map((n: any) => deserializeObjectWithIdentity({
+                base.colors.instanceColors = base.colors.instanceColors.map((n: any) => ({
                     color: n.color,
                     name: n.name,
-                    identity: n.identity,
+                    identity: JSON.parse(n.identity),
                 }));
             }
 
@@ -295,10 +291,10 @@ export default class AttributeSlicerVisualState extends HasSettings implements I
     public toJSONObject() {
         const jsonObj = super.toJSONObject() as AttributeSlicerVisualState;
         if (this.colors && this.colors.instanceColors) {
-            jsonObj.colors.instanceColors = this.colors.instanceColors.map(n => serializeObjectWithIdentity({
+            jsonObj.colors.instanceColors = this.colors.instanceColors.map(n => ({
                 color: n.color,
                 name: n.name,
-                identity: n.identity,
+                identity: <any>n.identity.getKey(),
             }));
         }
         return jsonObj;
@@ -327,13 +323,11 @@ function parseSelectionFromPBI(dataView: powerbi.DataView): ListItem[] {
     const objects = ldget(dataView, "metadata.objects");
     if (objects) {
         // HACK: Extra special code to restore selection
-        const selectedIds = parseSelectionIds(objects);
-        if (selectedIds && selectedIds.length) {
-            const serializedSelectedItems: ListItem[] = JSON.parse(ldget(objects, "general.selection"));
-            return selectedIds.map((n: powerbi.visuals.SelectionId, i: number) => {
-                const { match, value, renderedValue } = serializedSelectedItems[i];
-                const id = (n.getKey ? n.getKey() : n["key"]);
-                const item = createItem(match, value, id, n.getSelector(), renderedValue);
+        const serializedSelectedItems: ListItem[] = JSON.parse(ldget(objects, "general.selection"));
+        if (serializedSelectedItems && serializedSelectedItems.length) {
+            return serializedSelectedItems.map((n: ListItem, i: number) => {
+                const { match, value, renderedValue, id } = serializedSelectedItems[i];
+                const item = createItem(match, value, id, renderedValue);
                 return item;
             });
         }
@@ -353,7 +347,6 @@ function convertSelectionToPBI(value: ListItem[]) {
             id: n.id,
             match: n.match,
             value: n.value,
-            selector: n.selector,
             renderedValue: n.renderedValue,
         })));
     }
@@ -399,6 +392,20 @@ function nullToUndefined(obj: object) {
             } else if (typeof val === "object") {
                 nullToUndefined(val);
             }
+        });
+    }
+}
+
+function buildContainsFilter(dataView: powerbi.DataView, value: string) {
+    if (dataView) {
+        let categories: powerbi.DataViewCategoricalColumn = this.dataView.categorical.categories[0];
+        let target: models.IFilterColumnTarget = {
+            table: categories.source.queryName.substr(0, categories.source.queryName.indexOf('.')),
+            column: categories.source.displayName
+        };
+        return new models.AdvancedFilter(target, "And", {
+            operator: "Contains",
+            value
         });
     }
 }

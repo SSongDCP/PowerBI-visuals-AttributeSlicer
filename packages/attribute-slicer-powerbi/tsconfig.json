@@ -6,9 +6,16 @@
     "jsx": "react",
     "declaration": true,
     "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": [ "node_modules/@types/*", "*"]
+    }
   },
   "compileOnSave": false,
+  "files": [
+    "dist/bundle.js"
+  ],
   "exclude": [
     "power-bi",
     "node_modules",

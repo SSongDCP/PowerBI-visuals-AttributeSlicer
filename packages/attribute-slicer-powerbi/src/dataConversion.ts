@@ -28,7 +28,7 @@ import "powerbi-visuals/lib/powerbi-visuals";
 import IValueFormatter = powerbi.visuals.IValueFormatter;
 import DataView = powerbi.DataView;
 import { createValueFormatter, createCategoryFormatter } from "./formatting";
-import { serializeSelectors, IColorSettings, convertItemsWithSegments, IValueSegment } from "@essex/pbi-base";
+import { IColorSettings, convertItemsWithSegments, IValueSegment } from "@essex/pbi-base";
 const ldget = require("lodash/get"); //tslint:disable-line
 
 /**
@@ -52,13 +52,12 @@ export default function converter(
 
         const converted = convertItemsWithSegments(
             dataView,
-            (dvCats: any, catIdx: number, total: number, id: powerbi.visuals.SelectionId, valueSegments: IValueSegment[]) => {
+            (dvCats: any, catIdx: number, total: number, id: powerbi.visuals.ISelectionId, valueSegments: IValueSegment[]) => {
                 const item =
                     createItem(
                         buildCategoryDisplay(dvCats, catIdx, categoryFormatter),
                         total,
                         id.getKey(),
-                        id.getSelector(),
                         undefined,
                         "#ccc");
                 (valueSegments || []).forEach(segment => {
@@ -89,7 +88,7 @@ export function buildCategoryDisplay(cats: powerbi.DataViewCategoryColumn[], cat
 export function createItemFromSerializedItem(item: ISerializedItem) {
     "use strict";
     if (item) {
-        return createItem(item.match, item.value, item.id, item.selector, item.renderedValue, undefined, true);
+        return createItem(item.match, item.value, item.id, item.renderedValue, undefined, true);
     }
 }
 
@@ -100,7 +99,6 @@ export function createItem(
     category: string,
     value: any,
     id: string,
-    selector: powerbi.data.Selector,
     renderedValue?: any,
     color = "",
     noSerialize = false): ListItem {
@@ -111,7 +109,6 @@ export function createItem(
         color: color,
         value: value || 0,
         renderedValue: renderedValue,
-        selector: noSerialize ? selector : serializeSelectors([selector])[0],
         equals: (b: ListItem) => id === b.id,
     };
 }
